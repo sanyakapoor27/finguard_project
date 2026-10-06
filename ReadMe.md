@@ -2,9 +2,10 @@
 
 **AI-Driven Real-Time Risk, Liquidity & AML Reporting System Built on Snowflake**
 
-> Built entirely using **Snowflake CoCo (Cortex Code)** — from database design to semantic models, Cortex Search indexing, custom skills, MCP integrations, and full-stack deployment.
+> Built with the help of **Snowflake CoCo (Cortex Code)** — from database design to semantic models, Cortex Search indexing, custom skills, MCP integrations, and full-stack deployment.
 
-![FinGuard Dashboard](docs/images/dashboard-hero.png)
+![FinGuard Dashboard](<img width="1456" height="738" alt="image" src="https://github.com/user-attachments/assets/34dbc9e7-2570-4201-9ea2-75e70f79800c" />
+)
 
 ---
 
@@ -12,10 +13,7 @@
 
 | Surface | URL | Status |
 |---------|-----|--------|
-| **Streamlit Cloud** | `https://finguard-copilot.streamlit.app` | ![Streamlit](https://img.shields.io/badge/Streamlit-Live-FF4B4B) |
-| **Render (API)** | `https://finguard-backend.onrender.com` | ![Render](https://img.shields.io/badge/Render-Live-46E3B7) |
-| **Snowsight Workspace** | Open `finguard-copilot/streamlit_app.py` → Run | ![Snowflake](https://img.shields.io/badge/Snowflake-Native-29B5E8) |
-
+| **Streamlit Cloud** | `[https://finguard-copilot.streamlit.app](https://app.snowflake.com/streamlit/xlagkiw/qo59602/#/apps/qyse2rgpsw5k2ubn5hm2)` |
 ---
 
 ## Table of Contents
@@ -68,7 +66,8 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-![Architecture Diagram](docs/images/architecture.png)
+![Architecture Diagram](<img width="1117" height="470" alt="image" src="https://github.com/user-attachments/assets/50567341-b280-4566-b2bc-cd2ff8612885" />
+)
 
 ---
 
@@ -77,42 +76,50 @@
 ### 1. Executive Risk & Liquidity Command Center
 Live KPI dashboard with Current LCR %, Fraud At-Risk Volume, Critical AML Alerts, Expected Credit Loss (ECL), and Total RWA. Includes a 14-day LCR sparkline and transaction volume breakdown by channel (WIRE/ACH/SWIFT/CRYPTO).
 
-![Command Center](docs/images/feature-1-command-center.png)
+![Command Center](<img width="1466" height="527" alt="image" src="https://github.com/user-attachments/assets/5353147a-8b80-4c9f-be05-8e45b998b96e" />
+)
 
 ### 2. Deterministic Dual-Verifier Copilot
 Natural language query interface that runs **both** Cortex Analyst (SQL generation) and Cortex Search (policy retrieval) simultaneously. Results are cross-checked with a real-time VERIFIED / PARTIAL / FAILED variance badge. All queries are logged to `AUDIT_TRAIL_LOGS` with verification status.
 
-![Dual Verifier](docs/images/feature-2-dual-verifier.png)
+![Dual Verifier](<img width="1478" height="738" alt="image" src="https://github.com/user-attachments/assets/077f664c-29df-4f82-a201-6622183212c6" />
+)
 
 ### 3. Interactive Visual Lineage DAG
 Select any HIGH/CRITICAL AML alert to visualize the full causal chain: **Account** → **Suspicious Transactions** → **Violated Regulatory Clauses** (via Cortex Search) → **MCP Action Status** (Slack/Jira dispatches). Transaction evidence table highlights rows with fraud scores above 0.65.
 
-![Lineage DAG](docs/images/feature-3-lineage-dag.png)
+![Lineage DAG](<img width="1426" height="745" alt="image" src="https://github.com/user-attachments/assets/4484f981-5d29-4eec-8e94-81349c00b084" />
+)
 
 ### 4. What-If Liquidity & Credit Stress Sandbox
 Three interactive sliders for HQLA Haircut Adjustment, Credit Default Rate Spike, and Outflow Run-Off Speed. Produces real-time SVG line charts (Baseline vs Stressed LCR over 30 days) and bar charts (RWA/ECL impact) using live Snowpark calculations against `LIQUIDITY_POSITIONS` and `CREDIT_EXPOSURES`.
 
-![Stress Test](docs/images/feature-4-stress-test.png)
+![Stress Test](<img width="1391" height="750" alt="image" src="https://github.com/user-attachments/assets/71502cda-5f05-4328-8bf6-7ac298a3a285" />
+)
 
 ### 5. Regulatory "Filing-Ready" Auto-Drafter
 One-click generation of FinCEN SAR Filings, Basel III LCR Memos, and IFRS 9 ECL Provision Reports. Each filing includes regulatory clause citations retrieved via Cortex Search with `[^footnote]` references linking back to specific `SECTION_REF` identifiers. Downloadable as Markdown.
 
-![Filing Drafter](docs/images/feature-5-filing-drafter.png)
+![Filing Drafter](<img width="521" height="782" alt="image" src="https://github.com/user-attachments/assets/2fa3c7e2-a21d-47cd-b1bd-06ce519ade07" />
+)
 
 ### 6. AML Velocity & Network Loop Detection
 Live detection metrics: structuring transactions ($9K–$9.9K range), high-velocity accounts (>15 txns in 90 days), and offshore loop alerts. Includes a transaction distribution histogram near the $10K CTR threshold, top velocity accounts table, and alert severity × rule heatmap.
 
-![AML Network](docs/images/feature-6-aml-network.png)
+![AML Network](<img width="722" height="615" alt="image" src="https://github.com/user-attachments/assets/ba0ac9c9-9af8-4e9a-9549-4c73db2fda31" />
+)
 
 ### 7. Autonomous Cross-Tool Action Engine (MCP)
 Dispatch buttons to trigger Slack alerts and Jira tickets for CRITICAL AML alerts. Dispatches are logged to `MCP_DISPATCH_LOG` with structured VARIANT payloads. Integrated with Snowflake's Atlassian MCP Server (`FINGUARD_DB.PUBLIC.ATLASSIAN_MCP`) via Dynamic Client Registration OAuth.
 
-![MCP Actions](docs/images/feature-7-mcp-actions.png)
+![MCP Actions](<img width="710" height="383" alt="image" src="https://github.com/user-attachments/assets/beddcffd-1df1-42ee-95e3-b695021c27a5" />
+)
 
 ### 8. One-Click Signed Audit Export Package
 Generates a complete audit defense package containing: executive summary, deterministic breach-threshold checks (CTR/High-Risk Geo/Fraud Exposure), itemized transaction evidence table, and a SHA-256 digital signature. Available as Markdown download (Streamlit) or ZIP bundle (API).
 
-![Audit Export](docs/images/feature-8-audit-export.png)
+![Audit Export](<img width="476" height="575" alt="image" src="https://github.com/user-attachments/assets/5bb9e02a-4be2-4c73-8adc-8ee6099f123a" />
+)
 
 ---
 
@@ -135,7 +142,7 @@ Generates a complete audit defense package containing: executive summary, determ
 
 ## How We Used CoCo CLI
 
-Every component of FinGuard was built using **Snowflake CoCo (Cortex Code)** in a single conversational session:
+ FinGuard was built using help of **Snowflake CoCo (Cortex Code)** :
 
 | Step | CoCo Action | What It Built |
 |------|-------------|---------------|
@@ -214,86 +221,9 @@ warehouse = "COMPUTE_WH"
 role = "ACCOUNTADMIN"
 ```
 
----
-
-## Deploy to Streamlit Cloud
-
-### Step 1: Push to GitHub
-
-```bash
-git init
-git add .
-git commit -m "FinGuard CoCopilot"
-git remote add origin https://github.com/YOUR_USER/finguard-copilot.git
-git push -u origin main
-```
-
-### Step 2: Go to [share.streamlit.io](https://share.streamlit.io)
-
-1. Click **New app**
-2. Select your repo: `YOUR_USER/finguard-copilot`
-3. Branch: `main`
-4. Main file path: `finguard-copilot/streamlit_app.py`
-5. Click **Advanced settings** and paste these secrets:
-
-```toml
-[connections.snowflake]
-account = "YOUR_ORG-YOUR_ACCOUNT"
-user = "YOUR_USER"
-password = "YOUR_PASSWORD"
-database = "FINGUARD_DB"
-schema = "PUBLIC"
-warehouse = "COMPUTE_WH"
-role = "ACCOUNTADMIN"
-```
-
-> **Note:** For Streamlit Cloud, use `password` auth (not `externalbrowser`). Do NOT include `authenticator`.
-
-6. Click **Deploy**
-
-Your app will be live at `https://your-app-name.streamlit.app`
-
-![Streamlit Deploy](docs/images/deploy-streamlit.png)
-
----
-
-## Deploy to Render
-
-### Step 1: Push to GitHub (same as above)
-
-### Step 2: Go to [render.com](https://render.com)
-
-1. Click **New** → **Blueprint**
-2. Connect your GitHub repo
-3. Render auto-detects `render.yaml` and creates two services:
-   - `finguard-backend` (FastAPI on Python)
-   - `finguard-frontend` (Next.js on Node)
-
-### Step 3: Set Environment Variables
-
-In the Render dashboard, go to `finguard-backend` → **Environment**:
-
-| Variable | Value |
-|----------|-------|
-| `SNOWFLAKE_ACCOUNT` | `YOUR_ORG-YOUR_ACCOUNT` |
-| `SNOWFLAKE_USER` | `YOUR_USER` |
-| `SNOWFLAKE_PASSWORD` | `YOUR_PASSWORD` |
-| `SNOWFLAKE_WAREHOUSE` | `COMPUTE_WH` |
-| `SNOWFLAKE_DATABASE` | `FINGUARD_DB` |
-| `SNOWFLAKE_SCHEMA` | `PUBLIC` |
-
-4. Both services deploy automatically
-
-**Backend:** `https://finguard-backend.onrender.com/docs` (Swagger UI)
-**Frontend:** `https://finguard-frontend.onrender.com`
-
-![Render Deploy](docs/images/deploy-render.png)
-
----
-
 ## Run Locally
 
-### Option A: Streamlit Only (simplest)
+### Option A: Streamlit Only
 
 ```bash
 cd finguard-copilot
@@ -382,23 +312,3 @@ finguard-copilot/
 ├── aws-deploy.yaml                  # AWS CloudFormation template
 └── start_finguard.sh                # Linux/Mac deploy script
 ```
-
----
-
-## Screenshots
-
-> Add screenshots to `docs/images/` directory
-
-| Feature | Screenshot |
-|---------|-----------|
-| Dashboard Hero | ![](docs/images/dashboard-hero.png) |
-| Command Center | ![](docs/images/feature-1-command-center.png) |
-| Dual-Verifier Copilot | ![](docs/images/feature-2-dual-verifier.png) |
-| Lineage DAG | ![](docs/images/feature-3-lineage-dag.png) |
-| Stress Test Sandbox | ![](docs/images/feature-4-stress-test.png) |
-| Filing Drafter | ![](docs/images/feature-5-filing-drafter.png) |
-| AML Network | ![](docs/images/feature-6-aml-network.png) |
-| MCP Actions | ![](docs/images/feature-7-mcp-actions.png) |
-| Audit Export | ![](docs/images/feature-8-audit-export.png) |
-
----
