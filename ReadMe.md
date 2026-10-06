@@ -4,8 +4,7 @@
 
 > Built with the help of **Snowflake CoCo (Cortex Code)** — from database design to semantic models, Cortex Search indexing, custom skills, MCP integrations, and full-stack deployment.
 
-![FinGuard Dashboard](<img width="1456" height="738" alt="image" src="https://github.com/user-attachments/assets/34dbc9e7-2570-4201-9ea2-75e70f79800c" />
-)
+![FinGuard Dashboard](https://github.com/user-attachments/assets/34dbc9e7-2570-4201-9ea2-75e70f79800c)
 
 ---
 
@@ -66,8 +65,7 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-![Architecture Diagram](<img width="1117" height="470" alt="image" src="https://github.com/user-attachments/assets/50567341-b280-4566-b2bc-cd2ff8612885" />
-)
+![Architecture Diagram](https://github.com/user-attachments/assets/50567341-b280-4566-b2bc-cd2ff8612885)
 
 ---
 
@@ -82,43 +80,39 @@ Live KPI dashboard with Current LCR %, Fraud At-Risk Volume, Critical AML Alerts
 ### 2. Deterministic Dual-Verifier Copilot
 Natural language query interface that runs **both** Cortex Analyst (SQL generation) and Cortex Search (policy retrieval) simultaneously. Results are cross-checked with a real-time VERIFIED / PARTIAL / FAILED variance badge. All queries are logged to `AUDIT_TRAIL_LOGS` with verification status.
 
-![Dual Verifier](<img width="1478" height="738" alt="image" src="https://github.com/user-attachments/assets/077f664c-29df-4f82-a201-6622183212c6" />
-)
+![Dual Verifier](https://github.com/user-attachments/assets/077f664c-29df-4f82-a201-6622183212c6)
 
 ### 3. Interactive Visual Lineage DAG
 Select any HIGH/CRITICAL AML alert to visualize the full causal chain: **Account** → **Suspicious Transactions** → **Violated Regulatory Clauses** (via Cortex Search) → **MCP Action Status** (Slack/Jira dispatches). Transaction evidence table highlights rows with fraud scores above 0.65.
 
-![Lineage DAG](<img width="1426" height="745" alt="image" src="https://github.com/user-attachments/assets/4484f981-5d29-4eec-8e94-81349c00b084" />
-)
+![Lineage DAG](https://github.com/user-attachments/assets/4484f981-5d29-4eec-8e94-81349c00b084)
 
 ### 4. What-If Liquidity & Credit Stress Sandbox
 Three interactive sliders for HQLA Haircut Adjustment, Credit Default Rate Spike, and Outflow Run-Off Speed. Produces real-time SVG line charts (Baseline vs Stressed LCR over 30 days) and bar charts (RWA/ECL impact) using live Snowpark calculations against `LIQUIDITY_POSITIONS` and `CREDIT_EXPOSURES`.
 
-![Stress Test](<img width="1391" height="750" alt="image" src="https://github.com/user-attachments/assets/71502cda-5f05-4328-8bf6-7ac298a3a285" />
-)
+![Stress Test](https://github.com/user-attachments/assets/71502cda-5f05-4328-8bf6-7ac298a3a285)
 
 ### 5. Regulatory "Filing-Ready" Auto-Drafter
 One-click generation of FinCEN SAR Filings, Basel III LCR Memos, and IFRS 9 ECL Provision Reports. Each filing includes regulatory clause citations retrieved via Cortex Search with `[^footnote]` references linking back to specific `SECTION_REF` identifiers. Downloadable as Markdown.
 
-![Filing Drafter](<img width="521" height="782" alt="image" src="https://github.com/user-attachments/assets/2fa3c7e2-a21d-47cd-b1bd-06ce519ade07" />
-)
+![Filing Drafter](https://github.com/user-attachments/assets/2fa3c7e2-a21d-47cd-b1bd-06ce519ade07)
 
 ### 6. AML Velocity & Network Loop Detection
 Live detection metrics: structuring transactions ($9K–$9.9K range), high-velocity accounts (>15 txns in 90 days), and offshore loop alerts. Includes a transaction distribution histogram near the $10K CTR threshold, top velocity accounts table, and alert severity × rule heatmap.
 
-![AML Network](<img width="722" height="615" alt="image" src="https://github.com/user-attachments/assets/ba0ac9c9-9af8-4e9a-9549-4c73db2fda31" />
+![AML Network](https://github.com/user-attachments/assets/ba0ac9c9-9af8-4e9a-9549-4c73db2fda31
 )
 
 ### 7. Autonomous Cross-Tool Action Engine (MCP)
 Dispatch buttons to trigger Slack alerts and Jira tickets for CRITICAL AML alerts. Dispatches are logged to `MCP_DISPATCH_LOG` with structured VARIANT payloads. Integrated with Snowflake's Atlassian MCP Server (`FINGUARD_DB.PUBLIC.ATLASSIAN_MCP`) via Dynamic Client Registration OAuth.
 
-![MCP Actions](<img width="710" height="383" alt="image" src="https://github.com/user-attachments/assets/beddcffd-1df1-42ee-95e3-b695021c27a5" />
+![MCP Actions](https://github.com/user-attachments/assets/beddcffd-1df1-42ee-95e3-b695021c27a5
 )
 
 ### 8. One-Click Signed Audit Export Package
 Generates a complete audit defense package containing: executive summary, deterministic breach-threshold checks (CTR/High-Risk Geo/Fraud Exposure), itemized transaction evidence table, and a SHA-256 digital signature. Available as Markdown download (Streamlit) or ZIP bundle (API).
 
-![Audit Export](<img width="476" height="575" alt="image" src="https://github.com/user-attachments/assets/5bb9e02a-4be2-4c73-8adc-8ee6099f123a" />
+![Audit Export](https://github.com/user-attachments/assets/5bb9e02a-4be2-4c73-8adc-8ee6099f123a
 )
 
 ---
