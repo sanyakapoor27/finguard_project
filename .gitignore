@@ -1,0 +1,63 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Deployment / infra local files
+aws-deploy.yaml
+*.tfstate
+*.tfvars
+
+# Node / Next.js
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.venv/
+venv/
+env/
+ENV/
+
+# Streamlit / local app tool caches
+.streamlit/
+.coco/
+.snowflake/
+*.log
+
+# Data / generated artifacts
+*.sqlite3
+*.db
+.coverage
+coverage/
+htmlcov/
+dist/
+build/
+.cache/

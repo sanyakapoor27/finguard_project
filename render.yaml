@@ -1,0 +1,43 @@
+services:
+  # ── FastAPI Backend ──
+  - type: web
+    name: finguard-backend
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: "pip install fastapi uvicorn[standard] snowflake-snowpark-python pydantic"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    rootDir: backend
+    envVars:
+      - key: SNOWFLAKE_ACCOUNT
+        sync: false
+      - key: SNOWFLAKE_USER
+        sync: false
+      - key: SNOWFLAKE_PASSWORD
+        type: secret
+        sync: false
+      - key: SNOWFLAKE_WAREHOUSE
+        value: COMPUTE_WH
+      - key: SNOWFLAKE_DATABASE
+        value: FINGUARD_DB
+      - key: SNOWFLAKE_SCHEMA
+        value: PUBLIC
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+
+  # ── Next.js Frontend ──
+  - type: web
+    name: finguard-frontend
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    rootDir: frontend
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: finguard-backend
+          type: web
+          property: host
+    autoDeploy: true

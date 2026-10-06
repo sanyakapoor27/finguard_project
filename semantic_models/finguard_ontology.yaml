@@ -1,0 +1,325 @@
+name: FINGUARD_ONTOLOGY
+description: >-
+  FinGuard CoCopilot semantic model for real-time risk, liquidity, AML, and credit
+  exposure analytics. Covers TRANSACTIONS (50K rows with fraud scoring),
+  LIQUIDITY_POSITIONS (daily LCR snapshots), CREDIT_EXPOSURES (obligor-level
+  PD/LGD/EAD), and AML_ALERTS (suspicious activity monitoring).
+
+tables:
+  - name: TRANSACTIONS
+    base_table:
+      database: FINGUARD_DB
+      schema: PUBLIC
+      table: TRANSACTIONS
+    description: >-
+      Individual financial transactions with fraud risk scoring. Each row is a
+      single payment event across WIRE, ACH, CRYPTO, or SWIFT channels.
+    primary_key:
+      columns: [TXN_ID]
+    dimensions:
+      - name: TXN_ID
+        synonyms: [transaction id, transaction identifier]
+        expr: TXN_ID
+        data_type: VARCHAR
+        description: Unique UUID for each transaction.
+      - name: ACCOUNT_ID
+        synonyms: [account, customer account]
+        expr: ACCOUNT_ID
+        data_type: VARCHAR
+        description: Account identifier linking to the customer. Foreign key to AML_ALERTS.
+      - name: CURRENCY
+        expr: CURRENCY
+        data_type: VARCHAR
+        description: ISO 4217 currency code (USD, EUR, GBP, JPY, CHF, etc.).
+      - name: COUNTERPARTY_ID
+        expr: COUNTERPARTY_ID
+        data_type: VARCHAR
+        description: Identifier of the transaction counterparty.
+      - name: COUNTERPARTY_COUNTRY
+        synonyms: [country, destination country, counterparty jurisdiction]
+        expr: COUNTERPARTY_COUNTRY
+        data_type: VARCHAR
+        description: >-
+          ISO 3166 alpha-2 country code of the counterparty. High-risk jurisdictions
+          include IR (Iran), KP (North Korea), RU (Russia), AF (Afghanistan).
+      - name: CHANNEL
+        synonyms: [payment channel, payment method]
+        expr: CHANNEL
+        data_type: VARCHAR
+        description: "Payment channel: WIRE, ACH, CRYPTO, or SWIFT."
+      - name: IS_FLAGGED
+        synonyms: [flagged, flagged transaction]
+        expr: IS_FLAGGED
+        data_type: BOOLEAN
+        description: True when FRAUD_SCORE exceeds 0.65 threshold.
+    time_dimensions:
+      - name: TIMESTAMP
+        synonyms: [transaction date, transaction time, txn date]
+        expr: TIMESTAMP
+        data_type: TIMESTAMP_NTZ
+        description: UTC timestamp of the transaction.
+    facts:
+      - name: AMOUNT
+        synonyms: [transaction amount, value, payment amount]
+        expr: AMOUNT
+        data_type: FLOAT
+        description: Monetary value of the transaction in the stated currency.
+      - name: FRAUD_SCORE
+        synonyms: [fraud risk, risk score]
+        expr: FRAUD_SCORE
+        data_type: FLOAT
+        description: >-
+          ML-derived fraud probability between 0.0 (clean) and 1.0 (certain fraud).
+          Scores above 0.85 indicate high-risk transactions.
+    metrics:
+      - name: TOTAL_FRAUD_VOLUME
+        synonyms: [fraud volume, high risk fraud volume, total flagged amount]
+        expr: SUM(CASE WHEN FRAUD_SCORE > 0.85 THEN AMOUNT ELSE 0 END)
+        description: >-
+          Total monetary volume of transactions with FRAUD_SCORE > 0.85.
+          Key metric for fraud exposure reporting.
+      - name: HIGH_RISK_GEO_OUTFLOWS
+        synonyms: [high risk country outflows, sanctioned country transactions, OFAC country count]
+        expr: COUNT_IF(COUNTERPARTY_COUNTRY IN ('IR', 'KP', 'RU'))
+        description: >-
+          Count of transactions destined to high-risk jurisdictions: Iran (IR),
+          North Korea (KP), and Russia (RU).
+      - name: TRANSACTION_COUNT
+        synonyms: [number of transactions, txn count]
+        expr: COUNT(TXN_ID)
+        description: Total number of transactions.
+      - name: FLAGGED_TRANSACTION_COUNT
+        synonyms: [flagged count, number of flagged transactions]
+        expr: COUNT_IF(IS_FLAGGED)
+        description: Number of transactions where IS_FLAGGED = TRUE.
+
+  - name: LIQUIDITY_POSITIONS
+    base_table:
+      database: FINGUARD_DB
+      schema: PUBLIC
+      table: LIQUIDITY_POSITIONS
+    description: >-
+      Daily liquidity snapshots with Basel III LCR components. Each row is one
+      business-day snapshot of HQLA levels and projected 30-day cash flows.
+    time_dimensions:
+      - name: SNAPSHOT_DATE
+        synonyms: [date, reporting date, position date]
+        expr: SNAPSHOT_DATE
+        data_type: DATE
+        description: Date of the liquidity position snapshot.
+    facts:
+      - name: HQLA_LEVEL_1
+        synonyms: [level 1 assets, level 1 HQLA]
+        expr: HQLA_LEVEL_1
+        data_type: FLOAT
+        description: High-Quality Liquid Assets Level 1 (0% haircut). Includes cash and sovereign debt.
+      - name: HQLA_LEVEL_2A
+        synonyms: [level 2A assets]
+        expr: HQLA_LEVEL_2A
+        data_type: FLOAT
+        description: HQLA Level 2A (15% haircut). Includes AA-rated corporate bonds and 20% risk-weighted sovereign debt.
+      - name: HQLA_LEVEL_2B
+        synonyms: [level 2B assets]
+        expr: HQLA_LEVEL_2B
+        data_type: FLOAT
+        description: HQLA Level 2B (50% haircut). Includes RMBS and BBB-rated corporate debt.
+      - name: EXPECTED_CASH_OUTFLOWS_30D
+        synonyms: [cash outflows, 30 day outflows, expected outflows]
+        expr: EXPECTED_CASH_OUTFLOWS_30D
+        data_type: FLOAT
+        description: Projected total cash outflows over the next 30 calendar days under stress.
+      - name: EXPECTED_CASH_INFLOWS_30D
+        synonyms: [cash inflows, 30 day inflows, expected inflows]
+        expr: EXPECTED_CASH_INFLOWS_30D
+        data_type: FLOAT
+        description: Projected total cash inflows over the next 30 calendar days, capped at 75% of outflows per Basel III.
+      - name: LCR_RATIO
+        synonyms: [liquidity coverage ratio, LCR]
+        expr: LCR_RATIO
+        data_type: FLOAT
+        description: Pre-computed LCR ratio (Total HQLA / Net Outflows). Values above 1.0 meet Basel III minimum.
+    metrics:
+      - name: LCR_PERCENTAGE
+        synonyms: [liquidity coverage ratio percentage, LCR percent, current LCR ratio]
+        expr: >-
+          AVG(((HQLA_LEVEL_1 + (HQLA_LEVEL_2A * 0.85) + (HQLA_LEVEL_2B * 0.50))
+          / NULLIF(EXPECTED_CASH_OUTFLOWS_30D - LEAST(EXPECTED_CASH_INFLOWS_30D, EXPECTED_CASH_OUTFLOWS_30D * 0.75), 0))
+          * 100)
+        description: >-
+          Basel III Liquidity Coverage Ratio as percentage. Formula:
+          AVG(((Level1 + Level2A*0.85 + Level2B*0.50) / (Outflows - min(Inflows, 0.75*Outflows))) * 100).
+          Must be >= 100% to meet regulatory minimum.
+
+  - name: CREDIT_EXPOSURES
+    base_table:
+      database: FINGUARD_DB
+      schema: PUBLIC
+      table: CREDIT_EXPOSURES
+    description: >-
+      Credit risk exposures per obligor with Basel IRB parameters: Exposure at Default
+      (EAD), Probability of Default (PD), Loss Given Default (LGD), and Risk-Weighted
+      Assets (RWA).
+    primary_key:
+      columns: [OBLIGOR_ID]
+    dimensions:
+      - name: OBLIGOR_ID
+        synonyms: [obligor, borrower, counterparty]
+        expr: OBLIGOR_ID
+        data_type: VARCHAR
+        description: Unique identifier for each credit obligor.
+      - name: SECTOR
+        synonyms: [industry, industry sector]
+        expr: SECTOR
+        data_type: VARCHAR
+        description: "GICS sector classification: Technology, Financial Services, Healthcare, Energy, etc."
+      - name: RATING
+        synonyms: [credit rating, risk rating]
+        expr: RATING
+        data_type: VARCHAR
+        description: "Credit rating from AAA (safest) to CCC (highest risk)."
+    facts:
+      - name: EXPOSURE_AT_DEFAULT
+        synonyms: [EAD, exposure]
+        expr: EXPOSURE_AT_DEFAULT
+        data_type: FLOAT
+        description: Total exposure amount if the obligor defaults.
+      - name: PROBABILITY_OF_DEFAULT
+        synonyms: [PD, default probability]
+        expr: PROBABILITY_OF_DEFAULT
+        data_type: FLOAT
+        description: Estimated probability of obligor default within one year (0.0 to 1.0).
+      - name: LOSS_GIVEN_DEFAULT
+        synonyms: [LGD, loss severity]
+        expr: LOSS_GIVEN_DEFAULT
+        data_type: FLOAT
+        description: Expected loss as fraction of EAD if default occurs (0.0 to 1.0).
+      - name: RISK_WEIGHTED_ASSETS
+        synonyms: [RWA, risk weighted assets]
+        expr: RISK_WEIGHTED_ASSETS
+        data_type: FLOAT
+        description: Risk-weighted asset amount calculated via simplified IRB approach.
+    metrics:
+      - name: EXPECTED_CREDIT_LOSS
+        synonyms: [ECL, total expected loss, credit loss]
+        expr: SUM(EXPOSURE_AT_DEFAULT * PROBABILITY_OF_DEFAULT * LOSS_GIVEN_DEFAULT)
+        description: >-
+          Expected Credit Loss = SUM(EAD * PD * LGD). Represents the portfolio-level
+          anticipated loss under the IRB framework.
+      - name: TOTAL_RWA
+        synonyms: [total risk weighted assets, portfolio RWA]
+        expr: SUM(RISK_WEIGHTED_ASSETS)
+        description: Aggregate risk-weighted assets across all obligors.
+      - name: TOTAL_EXPOSURE
+        synonyms: [total EAD, portfolio exposure]
+        expr: SUM(EXPOSURE_AT_DEFAULT)
+        description: Total exposure at default across the credit portfolio.
+
+  - name: AML_ALERTS
+    base_table:
+      database: FINGUARD_DB
+      schema: PUBLIC
+      table: AML_ALERTS
+    description: >-
+      Anti-Money Laundering alerts generated by transaction monitoring rules.
+      Links to TRANSACTIONS via ACCOUNT_ID for investigation workflows.
+    primary_key:
+      columns: [ALERT_ID]
+    dimensions:
+      - name: ALERT_ID
+        synonyms: [alert identifier, AML alert id]
+        expr: ALERT_ID
+        data_type: VARCHAR
+        description: Unique identifier for each AML alert.
+      - name: ACCOUNT_ID
+        synonyms: [account, customer account]
+        expr: ACCOUNT_ID
+        data_type: VARCHAR
+        description: Account that triggered the alert. References TRANSACTIONS.ACCOUNT_ID.
+      - name: RULE_TRIGGERED
+        synonyms: [alert rule, AML rule, detection rule]
+        expr: RULE_TRIGGERED
+        data_type: VARCHAR
+        description: "AML rule that fired: Structuring, Rapid Velocity, or High Risk Country."
+      - name: SEVERITY
+        synonyms: [alert severity, risk level]
+        expr: SEVERITY
+        data_type: VARCHAR
+        description: "Alert severity level: LOW, MEDIUM, HIGH, or CRITICAL."
+      - name: STATUS
+        synonyms: [alert status, investigation status]
+        expr: STATUS
+        data_type: VARCHAR
+        description: "Current investigation status: OPEN, INVESTIGATING, or CLOSED."
+    metrics:
+      - name: TOTAL_ALERTS
+        synonyms: [alert count, number of AML alerts]
+        expr: COUNT(ALERT_ID)
+        description: Total number of AML alerts.
+      - name: OPEN_ALERTS
+        synonyms: [open alert count, unresolved alerts]
+        expr: COUNT_IF(STATUS = 'OPEN')
+        description: Number of AML alerts currently in OPEN status.
+      - name: CRITICAL_ALERTS
+        synonyms: [critical alert count, critical AML alerts]
+        expr: COUNT_IF(SEVERITY = 'CRITICAL')
+        description: Number of alerts with CRITICAL severity.
+
+relationships:
+  - name: TXN_TO_AML
+    left_table: TRANSACTIONS
+    right_table: AML_ALERTS
+    relationship_columns:
+      - left_column: ACCOUNT_ID
+        right_column: ACCOUNT_ID
+
+verified_queries:
+  - name: total_fraud_volume
+    question: What is the total fraud volume?
+    sql: >-
+      SELECT SUM(AMOUNT) AS TOTAL_FRAUD_VOLUME
+      FROM FINGUARD_DB.PUBLIC.TRANSACTIONS
+      WHERE FRAUD_SCORE > 0.85
+    verified_at: 1728200000
+    verified_by: FinGuard Chief Architect
+  - name: current_lcr_ratio
+    question: What is our current LCR ratio?
+    sql: >-
+      SELECT SNAPSHOT_DATE,
+        ((HQLA_LEVEL_1 + (HQLA_LEVEL_2A * 0.85) + (HQLA_LEVEL_2B * 0.50))
+        / (EXPECTED_CASH_OUTFLOWS_30D - LEAST(EXPECTED_CASH_INFLOWS_30D, EXPECTED_CASH_OUTFLOWS_30D * 0.75)))
+        * 100 AS LCR_PERCENTAGE
+      FROM FINGUARD_DB.PUBLIC.LIQUIDITY_POSITIONS
+      ORDER BY SNAPSHOT_DATE DESC
+      LIMIT 1
+    verified_at: 1728200000
+    verified_by: FinGuard Chief Architect
+  - name: expected_credit_loss
+    question: What is the expected credit loss?
+    sql: >-
+      SELECT SUM(EXPOSURE_AT_DEFAULT * PROBABILITY_OF_DEFAULT * LOSS_GIVEN_DEFAULT)
+        AS EXPECTED_CREDIT_LOSS
+      FROM FINGUARD_DB.PUBLIC.CREDIT_EXPOSURES
+    verified_at: 1728200000
+    verified_by: FinGuard Chief Architect
+  - name: high_risk_geo_outflows
+    question: How many high risk geographic outflows are there?
+    sql: >-
+      SELECT COUNT(TXN_ID) AS HIGH_RISK_GEO_OUTFLOWS
+      FROM FINGUARD_DB.PUBLIC.TRANSACTIONS
+      WHERE COUNTERPARTY_COUNTRY IN ('IR', 'KP', 'RU')
+    verified_at: 1728200000
+    verified_by: FinGuard Chief Architect
+  - name: lcr_and_fraud_volume
+    question: What is our current LCR ratio and high-risk fraud volume?
+    sql: >-
+      SELECT
+        (SELECT ((HQLA_LEVEL_1 + (HQLA_LEVEL_2A * 0.85) + (HQLA_LEVEL_2B * 0.50))
+          / (EXPECTED_CASH_OUTFLOWS_30D - LEAST(EXPECTED_CASH_INFLOWS_30D, EXPECTED_CASH_OUTFLOWS_30D * 0.75)))
+          * 100 AS LCR_PERCENTAGE
+         FROM FINGUARD_DB.PUBLIC.LIQUIDITY_POSITIONS
+         ORDER BY SNAPSHOT_DATE DESC LIMIT 1) AS CURRENT_LCR,
+        (SELECT SUM(AMOUNT) AS TOTAL_FRAUD_VOLUME
+         FROM FINGUARD_DB.PUBLIC.TRANSACTIONS
+         WHERE FRAUD_SCORE > 0.85) AS HIGH_RISK_FRAUD_VOLUME
+    verified_at: 1728200000
+    verified_by: FinGuard Chief Architect
