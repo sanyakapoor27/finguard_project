@@ -11,9 +11,9 @@
 
 ## Live Demo Links
 
-| Surface | URL | Status |
-|---------|-----|--------|
-| **Streamlit Cloud** | `[https://finguard-copilot.streamlit.app](https://app.snowflake.com/streamlit/xlagkiw/qo59602/#/apps/qyse2rgpsw5k2ubn5hm2)` |
+| Surface | URL |
+|---------|-----|
+| **Streamlit Cloud** | [finguard-copilot.streamlit.app](https://app.snowflake.com/streamlit/xlagkiw/qo59602/#/apps/qyse2rgpsw5k2ubn5hm2) |
 ---
 
 ## Table of Contents
